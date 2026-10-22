@@ -19,7 +19,7 @@ export async function readFileSlice(root,file,startLine=1,lineCount=100,knownHas
   const current=await fs.realpath(target);
   if(current!==target)throw Error('File changed during validation');
   const pathStat=await fs.stat(target);
-  if(pathStat.dev!==stat.dev||pathStat.ino!==stat.ino)throw Error('File changed during validation');
+  if(process.platform!=='win32' && (pathStat.dev!==stat.dev||pathStat.ino!==stat.ino))throw Error('File changed during validation');
   const buffer=Buffer.alloc(2000001);
   let total=0;
   while(total<buffer.length){
