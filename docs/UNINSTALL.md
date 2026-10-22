@@ -16,4 +16,4 @@ For a global package installation:
 npm uninstall --global contextpilot-mcp
 ```
 
-For a local package, run `npm uninstall contextpilot-mcp` in that package's parent project. Local installation/removal was tested in a temporary project. Windows/macOS behavior remains pending CI.
+For a local package, run `npm uninstall contextpilot-mcp` in that package's parent project. Local installation/removal was tested in a temporary project. The isolated package lifecycle also passed Windows and macOS CI; global installation/removal remains unvalidated.

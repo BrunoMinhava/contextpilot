@@ -1,6 +1,6 @@
 # Windows 10/11
 
-**Not locally validated.** Windows CI is configured, not certified. Requires Node.js 22.13+ with npm and a user-writable package directory. Use PowerShell; `npm.cmd` can be used where execution policy blocks npm.ps1.
+**Package tests passed in Windows GitHub Actions on Node 22.13.0 and 24.** [Run](https://github.com/BrunoMinhava/contextpilot/actions/runs/39711271736). Interactive client setup, ACL enforcement and global installation remain unvalidated; the symlink test is skipped on Windows. Requires Node.js 22.13+ with npm and a user-writable package directory. Use PowerShell; `npm.cmd` can be used where execution policy blocks npm.ps1.
 
 The intended archive installation is:
 

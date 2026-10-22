@@ -6,7 +6,9 @@ Validated locally on Linux, Node 24.19.0:
 - npm archive installation into an empty temporary project, diagnostic execution, reinstall, uninstall and removal check.
 - Four synthetic compression fixtures; raw results in `benchmarks/local-results.json`. These are character counts, not token usage or task success. No competitor was executed.
 
-Not validated: Windows, macOS, minimum Node 22.13 runtime, global installation, Codex CLI/application/VS Code, Claude Code, provider token accounting, live coding task quality, security under hostile filesystem mutation. CI is configured to cover OS/Node/package tests but must actually pass before those are claimed validated.
+CI validation passed in all six jobs (Linux, macOS, Windows × Node 22.13.0 and 24): https://github.com/BrunoMinhava/contextpilot/actions/runs/39711271736 . This covers tests, diagnostics, benchmark assertions, packaging and installation/removal. Windows skips the symlink test when developer-mode permissions are required.
+
+Not validated: global installation, Codex CLI/application/VS Code, Claude Code, provider token accounting, live coding task quality, security under hostile filesystem mutation. CI success does not validate real-agent compatibility or Windows ACL protection.
 
 Outstanding requested product requirements:
 
