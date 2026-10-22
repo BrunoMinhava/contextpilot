@@ -1,16 +1,1 @@
-{
-  "name": "contextpilot-mcp",
-  "version": "0.1.0",
-  "description": "Local-first MCP tools for selective file reading and compacting noisy output",
-  "type": "module",
-  "bin": {
-    "contextpilot": "./src/server.js"
-  },
-  "scripts": {
-    "test": "node --test"
-  },
-  "engines": {
-    "node": ">=20"
-  },
-  "license": "MIT"
-}
+{"name":"contextpilot-mcp","version":"0.2.0","description":"Local-first MCP tools for selective file reading and reversible context compaction","type":"module","bin":{"contextpilot":"./src/server.js"},"scripts":{"test":"node --test"},"engines":{"node":">=20"},"license":"MIT"}
