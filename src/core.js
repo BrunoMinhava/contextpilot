@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import {constants} from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {compactText} from './compression.js';
@@ -7,9 +8,28 @@ export async function readFileSlice(root,file,startLine=1,lineCount=100,knownHas
  if(typeof file!=='string'||!file)throw Error('file is required');
  const base=await fs.realpath(root),target=await fs.realpath(path.resolve(base,file));
  if(target!==base&&!target.startsWith(base+path.sep))throw Error('Outside project root');
- const stat=await fs.stat(target);
- if(!stat.isFile()||stat.size>2000000)throw Error('Unsupported file (max 2MB)');
- const content=await fs.readFile(target,'utf8');
+ // Open the resolved path without following a final symlink on POSIX.
+ // Check the opened descriptor, not only a path that could change between calls.
+ const flags=constants.O_RDONLY|(process.platform==='win32'?0:constants.O_NOFOLLOW);
+ const handle=await fs.open(target,flags);
+ let content;
+ try{
+  const stat=await handle.stat();
+  if(!stat.isFile()||stat.size>2000000)throw Error('Unsupported file (max 2MB)');
+  const current=await fs.realpath(target);
+  if(current!==target)throw Error('File changed during validation');
+  const pathStat=await fs.stat(target);
+  if(process.platform!=='win32' && (pathStat.dev!==stat.dev||pathStat.ino!==stat.ino))throw Error('File changed during validation');
+  const buffer=Buffer.alloc(2000001);
+  let total=0;
+  while(total<buffer.length){
+   const {bytesRead}=await handle.read(buffer,total,buffer.length-total,total);
+   if(!bytesRead)break;
+   total+=bytesRead;
+  }
+  if(total>2000000)throw Error('Unsupported file (max 2MB)');
+  content=buffer.toString('utf8',0,total);
+ }finally{await handle.close();}
  const hash=crypto.createHash('sha256').update(content).digest('hex');
  if(knownHash===hash)return {file:path.relative(base,target),hash,unchanged:true};
  const lines=content.split(/\r?\n/);

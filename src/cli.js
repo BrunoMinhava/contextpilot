@@ -5,6 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {PersistentCache} from './storage.js';
 import {benchmark} from './benchmark.js';
+import {measurePayloads} from './payload-benchmark.js';
 const args=process.argv.slice(2), command=args.shift()||'help';
 const output=value=>console.log(JSON.stringify(value,null,2));
 const options={root:process.env.CONTEXTPILOT_ROOT||process.cwd(),...(process.env.CONTEXTPILOT_CACHE_DIR?{directory:process.env.CONTEXTPILOT_CACHE_DIR}:{})};
@@ -13,6 +14,13 @@ try{
  switch(command){
  case 'serve':await import('./server.js');break;
  case 'benchmark':{const result=benchmark();output(result);if(result.results.some(r=>!r.fixturePassed))process.exitCode=1;break;}
+ case 'benchmark-input':{
+  // Read a JSON array from stdin. Output contains only numeric measurements.
+  // Do not use this command with secrets unless your terminal and shell history are trusted.
+  const payloads=JSON.parse(fs.readFileSync(0,'utf8'));
+  output(measurePayloads(payloads,{maxChars:args[0]===undefined?8000:Number(args[0])}));
+  break;
+ }
  case 'doctor':{
   const directory=fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()),'contextpilot-doctor-'));
   try{const first=new PersistentCache({...options,directory});const r=first.put('INFO diagnostic\n'.repeat(100),200);first.close();const second=new PersistentCache({...options,directory});try{if(second.get(r.id,0,100000).text!=='INFO diagnostic\n'.repeat(100))throw Error('Recovery check failed');}finally{second.close()}
@@ -32,7 +40,7 @@ Commands:
   compact [maxChars]    Read stdin; preserve original in project cache
   retrieve ID [start] [length]
   stats                 Show project character metrics, including retrieval cost
-  benchmark             Run offline synthetic fixtures, no API required
+  benchmark             Run offline synthetic fixtures, no API required\n  benchmark-input [maxChars] Read JSON string array from stdin; output measurements only
   cache-clear --yes     Delete project cache contents and metrics
 Environment: CONTEXTPILOT_ROOT, CONTEXTPILOT_CACHE_DIR
 Agent tools must be explicitly used. Automatic interception is not implemented.`);break;
