@@ -1,0 +1,50 @@
+{
+  "kind": "offline synthetic transformation benchmark",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "units": "UTF-16 code units, NOT model tokens",
+  "qualityScope": "Fixture assertions only; no model task-success evaluation",
+  "competitorsExecuted": false,
+  "results": [
+    {
+      "name": "repeated-log",
+      "inputChars": 15000,
+      "outputChars": 92,
+      "avoidedChars": 14908,
+      "strategy": "repeated-log-lines",
+      "latencyMs": 1.0570449999999596,
+      "fixturePassed": true,
+      "budgetExceeded": false
+    },
+    {
+      "name": "middle-error",
+      "inputChars": 8055,
+      "outputChars": 224,
+      "avoidedChars": 7831,
+      "strategy": "repeated-log-lines",
+      "latencyMs": 0.916560000000004,
+      "fixturePassed": true,
+      "budgetExceeded": false
+    },
+    {
+      "name": "formatted-json",
+      "inputChars": 5011,
+      "outputChars": 2403,
+      "avoidedChars": 2608,
+      "strategy": "json-whitespace",
+      "latencyMs": 1.7179530000000227,
+      "fixturePassed": true,
+      "budgetExceeded": true
+    },
+    {
+      "name": "unique-code",
+      "inputChars": 10279,
+      "outputChars": 10279,
+      "avoidedChars": 0,
+      "strategy": "preserve",
+      "latencyMs": 5.901620000000037,
+      "fixturePassed": true,
+      "budgetExceeded": true
+    }
+  ]
+}

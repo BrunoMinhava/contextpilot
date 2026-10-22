@@ -1,49 +1,29 @@
 name: Tests
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   node:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [20, 22, 24]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['22.13.0', '24']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ matrix.node }}
       - run: npm test
-      - name: MCP protocol smoke test
-        run: |
-          node --input-type=module <<'EOF'
-          import { spawn } from 'node:child_process';
-          import assert from 'node:assert/strict';
-          const child = spawn('node', ['src/server.js'], { stdio: ['pipe','pipe','inherit'] });
-          let output = '';
-          const pending = new Map();
-          child.stdout.on('data', chunk => {
-            output += chunk.toString();
-            let pos;
-            while ((pos = output.indexOf('\n')) !== -1) {
-              const msg = JSON.parse(output.slice(0,pos));
-              output = output.slice(pos+1);
-              const resolve = pending.get(msg.id);
-              if (resolve) { pending.delete(msg.id); resolve(msg); }
-            }
-          });
-          const request = (id, method, params={}) => new Promise((resolve,reject) => {
-            const timeout = setTimeout(()=>reject(new Error('MCP timeout')),5000);
-            pending.set(id, msg => {clearTimeout(timeout);resolve(msg);});
-            child.stdin.write(JSON.stringify({jsonrpc:'2.0',id,method,params})+'\n');
-          });
-          try {
-            const init = await request(1,'initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'smoke',version:'1'}});
-            assert.equal(init.result.serverInfo.name,'contextpilot');
-            const list = await request(2,'tools/list');
-            assert.equal(list.result.tools.length,2);
-            const call = await request(3,'tools/call',{name:'compact_text',arguments:{text:'hello'}});
-            assert.equal(JSON.parse(call.result.content[0].text).text,'hello');
-            console.log('MCP smoke test passed');
-          } finally { child.kill(); }
-          EOF
+      - run: node src/cli.js doctor
+      - run: npm run benchmark
+      - run: npm pack
+      - run: npm run test:package
+      - run: node scripts/checksum.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-${{ matrix.os }}-node-${{ matrix.node }}
+          path: |
+            contextpilot-mcp-*.tgz
+            SHA256SUMS
